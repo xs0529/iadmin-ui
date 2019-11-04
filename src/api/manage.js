@@ -1,7 +1,7 @@
 import { axios } from '@/utils/request'
 
 const api = {
-  user: '/user',
+  user: '/sysUser',
   role: '/role',
   service: '/service',
   permission: '/permission',
@@ -13,8 +13,8 @@ export default api
 
 export function getUserList (parameter) {
   return axios({
-    url: api.user,
-    method: 'get',
+    url: api.user + '/list',
+    method: 'post',
     params: parameter
   })
 }

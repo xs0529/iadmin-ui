@@ -268,58 +268,86 @@ export const asyncRouterMap = [
         path: '/other',
         name: 'otherPage',
         component: PageView,
-        meta: { title: '其他组件', icon: 'slack', permission: [ 'dashboard' ] },
+        meta: { title: '其他组件', icon: 'slack', permission: [ 'SysUser' ] },
         redirect: '/other/icon-selector',
         children: [
           {
             path: '/other/icon-selector',
             name: 'TestIconSelect',
             component: () => import('@/views/other/IconSelectorView'),
-            meta: { title: 'IconSelector', icon: 'tool', keepAlive: true, permission: [ 'dashboard' ] }
+            meta: { title: 'IconSelector', icon: 'tool', keepAlive: true, permission: [ 'SysUser' ] }
           },
           {
             path: '/other/list',
             component: RouteView,
-            meta: { title: '业务布局', icon: 'layout', permission: [ 'support' ] },
+            meta: { title: '业务布局', icon: 'layout', permission: [ 'SysUser' ] },
             redirect: '/other/list/tree-list',
             children: [
               {
                 path: '/other/list/tree-list',
-                name: 'TreeList',
+                name: 'TreeList1',
                 component: () => import('@/views/other/TreeList'),
                 meta: { title: '树目录表格', keepAlive: true }
               },
               {
                 path: '/other/list/edit-table',
-                name: 'EditList',
+                name: 'EditList1',
                 component: () => import('@/views/other/TableInnerEditList'),
                 meta: { title: '内联编辑表格', keepAlive: true }
               },
               {
                 path: '/other/list/user-list',
-                name: 'UserList',
+                name: 'UserList1',
                 component: () => import('@/views/other/UserList'),
                 meta: { title: '用户列表', keepAlive: true }
               },
               {
                 path: '/other/list/role-list',
-                name: 'RoleList',
+                name: 'RoleList1',
                 component: () => import('@/views/other/RoleList'),
                 meta: { title: '角色列表', keepAlive: true }
               },
               {
                 path: '/other/list/system-role',
-                name: 'SystemRole',
+                name: 'SystemRole1',
                 component: () => import('@/views/role/RoleList'),
                 meta: { title: '角色列表2', keepAlive: true }
               },
               {
                 path: '/other/list/permission-list',
-                name: 'PermissionList',
+                name: 'PermissionList1',
                 component: () => import('@/views/other/PermissionList'),
                 meta: { title: '权限列表', keepAlive: true }
               }
             ]
+          }
+        ]
+      },
+      // system
+      {
+        path: '/system',
+        name: 'systemPage',
+        component: PageView,
+        meta: { title: '系统管理', icon: 'slack', permission: [ 'System' ] },
+        redirect: '/other/icon-selector',
+        children: [
+          {
+            path: '/system/list/user-list',
+            name: 'UserList',
+            component: () => import('@/views/system/UserList'),
+            meta: { title: '用户列表', keepAlive: true, permission: [ 'SysUser' ] }
+          },
+          {
+            path: '/system/list/role-list',
+            name: 'RoleList',
+            component: () => import('@/views/system/RoleList'),
+            meta: { title: '角色列表', keepAlive: true, permission: [ 'SysRole' ] }
+          },
+          {
+            path: '/system/list/permission-list',
+            name: 'PermissionList',
+            component: () => import('@/views/system/PermissionList'),
+            meta: { title: '权限列表', keepAlive: true, permission: [ 'SysPermission' ] }
           }
         ]
       }
