@@ -4,7 +4,7 @@ import generate from '@ant-design/colors/lib/generate'
 export default {
   getAntdSerials (color) {
     // 淡化（即less的tint）
-    const lightens = new Array(9).fill().map((t, i) => {
+    const lightens = new Array(9).fill(undefined, undefined, undefined).map((t, i) => {
       return client.varyColor.lighten(color, i / 10)
     })
     // colorPalette变换得到颜色值
@@ -14,7 +14,7 @@ export default {
   },
   changeColor (newColor) {
     var options = {
-      newColors: this.getAntdSerials(newColor), // new colors array, one-to-one corresponde with `matchColors`
+      newColors: this.getAntdSerials(newColor),
       changeUrl (cssUrl) {
         return `/${cssUrl}` // while router is not `hash` mode, it needs absolute path
       }

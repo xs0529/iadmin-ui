@@ -4,23 +4,19 @@
       <a-form layout="inline">
         <a-row :gutter="48">
           <a-col :md="8" :sm="24">
-            <a-form-item label="角色ID">
-              <a-input placeholder="请输入"/>
+            <a-form-item label="角色名称">
+              <a-input v-model="queryParam.roleName" placeholder="请输入"/>
             </a-form-item>
           </a-col>
           <a-col :md="8" :sm="24">
-            <a-form-item label="状态">
-              <a-select placeholder="请选择" default-value="0">
-                <a-select-option value="0">全部</a-select-option>
-                <a-select-option value="1">正常</a-select-option>
-                <a-select-option value="2">禁用</a-select-option>
-              </a-select>
+            <a-form-item label="角色标识">
+              <a-input v-model="queryParam.label" placeholder="请输入"/>
             </a-form-item>
           </a-col>
-          <a-col :md="8" :sm="24">
-            <span class="table-page-search-submitButtons">
-              <a-button type="primary">查询</a-button>
-              <a-button style="margin-left: 8px">重置</a-button>
+          <a-col :md="!advanced && 8 || 24" :sm="24">
+            <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
+              <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
+              <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
             </span>
           </a-col>
         </a-row>
@@ -33,24 +29,6 @@
       :columns="columns"
       :data="loadData"
     >
-      <div
-        slot="expandedRowRender"
-        slot-scope="record"
-        style="margin: 0">
-        <a-row
-          :gutter="24"
-          :style="{ marginBottom: '12px' }">
-          <a-col :span="12" v-for="(role, index) in record.permissions" :key="index" :style="{ marginBottom: '12px' }">
-            <a-col :span="4">
-              <span>{{ role.permissionName }}：</span>
-            </a-col>
-            <a-col :span="20" v-if="role.actionEntitySet.length > 0">
-              <a-tag color="cyan" v-for="(action, k) in role.actionEntitySet" :key="k">{{ action.describe }}</a-tag>
-            </a-col>
-            <a-col :span="20" v-else>-</a-col>
-          </a-col>
-        </a-row>
-      </div>
       <span slot="action" slot-scope="text, record">
         <a @click="$refs.modal.edit(record)">编辑</a>
         <a-divider type="vertical" />
@@ -81,6 +59,8 @@
 <script>
 import { STable } from '@/components'
 import RoleModal from './modules/RoleModal'
+// eslint-disable-next-line no-unused-vars
+import { getRoleList } from '@/api/manage'
 
 export default {
   name: 'TableList',
@@ -90,7 +70,7 @@ export default {
   },
   data () {
     return {
-      description: '列表使用场景：后台管理中的权限管理以及角色管理，可用于基于 RBAC 设计的角色权限控制，颗粒度细到每一个操作类型。',
+      // description: '列表使用场景：后台管理中的权限管理以及角色管理，可用于基于 RBAC 设计的角色权限控制，颗粒度细到每一个操作类型。',
 
       visible: false,
 
@@ -104,22 +84,34 @@ export default {
       // 表头
       columns: [
         {
-          title: '唯一识别码',
+          title: 'id',
           dataIndex: 'id'
         },
         {
           title: '角色名称',
-          dataIndex: 'name'
+          dataIndex: 'roleName'
         },
         {
-          title: '状态',
-          dataIndex: 'status'
+          title: '备注',
+          dataIndex: 'comments'
+        },
+        {
+          title: '角色标识',
+          dataIndex: 'label'
         },
         {
           title: '创建时间',
           dataIndex: 'createTime',
-          sorter: true
-        }, {
+          sorter: true,
+          customRender: (text) => new Date(text).toLocaleString()
+        },
+        {
+          title: '修改时间',
+          dataIndex: 'updateTime',
+          sorter: true,
+          customRender: (text) => new Date(text).toLocaleString()
+        },
+        {
           title: '操作',
           width: '150px',
           dataIndex: 'action',
@@ -128,11 +120,10 @@ export default {
       ],
       // 加载数据方法 必须为 Promise 对象
       loadData: parameter => {
-        return this.$http.get('/role', {
-          params: Object.assign(parameter, this.queryParam)
-        }).then(res => {
-          return res.result
-        })
+        return getRoleList(Object.assign(parameter, this.queryParam))
+          .then(res => {
+            return res.data
+          })
       },
       selectedRowKeys: [],
       selectedRows: []

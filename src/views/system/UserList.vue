@@ -4,23 +4,48 @@
       <a-form layout="inline">
         <a-row :gutter="48">
           <a-col :md="8" :sm="24">
-            <a-form-item label="用户名称">
-              <a-input placeholder="请输入"/>
+            <a-form-item label="用户名">
+              <a-input v-model="queryParam.username" placeholder="请输入"/>
             </a-form-item>
           </a-col>
           <a-col :md="8" :sm="24">
-            <a-form-item label="状态">
-              <a-select placeholder="请选择" default-value="0">
-                <a-select-option value="0">全部</a-select-option>
-                <a-select-option value="1">关闭</a-select-option>
-                <a-select-option value="2">运行中</a-select-option>
-              </a-select>
+            <a-form-item label="姓名">
+              <a-input v-model="queryParam.trueName" placeholder="请输入"/>
             </a-form-item>
           </a-col>
-          <a-col :md="8" :sm="24">
-            <span class="table-page-search-submitButtons">
-              <a-button type="primary">查询</a-button>
-              <a-button style="margin-left: 8px">重置</a-button>
+          <template v-if="advanced">
+            <a-col :md="8" :sm="24">
+              <a-form-item label="昵称">
+                <a-input v-model="queryParam.nickName" placeholder="请输入"/>
+              </a-form-item>
+            </a-col>
+            <a-col :md="8" :sm="24">
+              <a-form-item label="状   态">
+                <a-select placeholder="请选择" default-value="" v-model="queryParam.state">
+                  <a-select-option value="">全部</a-select-option>
+                  <a-select-option value="1">正常</a-select-option>
+                  <a-select-option value="0">禁用</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :md="8" :sm="24">
+              <a-form-item label="状态">
+                <a-select placeholder="请选择" default-value="" v-model="queryParam.sex">
+                  <a-select-option value="">全部</a-select-option>
+                  <a-select-option value="男">男</a-select-option>
+                  <a-select-option value="女">女</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+          </template>
+          <a-col :md="!advanced && 8 || 24" :sm="24">
+            <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
+              <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
+              <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
+              <a @click="toggleAdvanced" style="margin-left: 8px">
+                {{ advanced ? '收起' : '展开' }}
+                <a-icon :type="advanced ? 'up' : 'down'"/>
+              </a>
             </span>
           </a-col>
         </a-row>
@@ -28,11 +53,15 @@
     </div>
 
     <s-table
+      ref="table"
       size="default"
       :columns="columns"
       :data="loadData"
       :showPagination="true"
     >
+      <span slot="state" slot-scope="text">
+        <a-tag :color="text===1 ? 'green' : 'volcano'" v-text="text===1 ? '正常' : '禁用'"></a-tag>
+      </span>
       <span slot="action" slot-scope="text, record">
         <a @click="handleEdit(record)">编辑</a>
         <a-divider type="vertical" />
@@ -69,8 +98,7 @@ export default {
   },
   data () {
     return {
-      description: '列表使用场景：后台管理中的用户管理。',
-
+      // description: '列表使用场景：后台管理中的用户管理。',
       visible: false,
       labelCol: {
         xs: { span: 24 },
@@ -80,7 +108,7 @@ export default {
         xs: { span: 24 },
         sm: { span: 16 }
       },
-      form: null,
+      form: false,
       mdl: {},
 
       // 高级搜索 展开/关闭
@@ -90,7 +118,7 @@ export default {
       // 表头
       columns: [
         {
-          title: '唯一识别码',
+          title: 'id',
           dataIndex: 'id'
         },
         {
@@ -111,12 +139,14 @@ export default {
         },
         {
           title: '状态',
-          dataIndex: 'state'
+          dataIndex: 'state',
+          scopedSlots: { customRender: 'state' }
         },
         {
           title: '创建时间',
           dataIndex: 'createTime',
-          sorter: true
+          sorter: true,
+          customRender: (text) => new Date(text).toLocaleString()
         }, {
           title: '操作',
           width: '150px',
@@ -126,7 +156,7 @@ export default {
       ],
       // 加载数据方法 必须为 Promise 对象
       loadData: parameter => {
-        return getUserList(parameter)
+        return getUserList(Object.assign(parameter, this.queryParam))
           .then(res => {
             return res.data
           })
@@ -138,10 +168,6 @@ export default {
   created () {
     getServiceList().then(res => {
       console.log('getServiceList.call()', res)
-    })
-
-    getUserList().then(res => {
-      console.log('getRoleList.call()', res)
     })
   },
   methods: {
