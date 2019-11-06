@@ -83,6 +83,65 @@
         </a-dropdown>
       </span>
     </s-table>
+
+    <a-modal
+      title="操作"
+      style="top: 20px;"
+      :width="800"
+      v-model="visible"
+      :confirmLoading="confirmLoading"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
+      <a-form :autoFormCreate="(form)=>{this.form = form}">
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="id"
+        >
+          <a-input placeholder="id" v-model="mdl.id" disabled="disabled" />
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="用户名"
+        >
+          <a-input placeholder="起一个名字" v-model="mdl.username" v-decorator="['username', {rules: [{required: true, min: 6, message: '用户名至少为6位！'}]}]"/>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="昵称"
+        >
+          <a-input placeholder="请输入昵称" v-model="mdl.nickName" v-decorator="['nickName', {rules: [{required: true, min: 1, message: '请输入昵称！'}]}]"/>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="真实姓名"
+        >
+          <a-input placeholder="请输入真实姓名" v-model="mdl.trueName" v-decorator="['trueName', {rules: [{required: true, min: 2, message: '请输入真实姓名,至少两位！'}]}]"/>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="状态"
+        >
+          <a-select v-model="mdl.state" v-decorator="['state', {rules: [{required: true, message: '请选择状态'}]}]">
+            <a-select-option value="1">正常</a-select-option>
+            <a-select-option value="0">禁用</a-select-option>
+          </a-select>
+        </a-form-item>
+
+        <a-divider />
+
+      </a-form>
+    </a-modal>
   </a-card>
 </template>
 
@@ -108,9 +167,9 @@ export default {
         xs: { span: 24 },
         sm: { span: 16 }
       },
-      form: false,
+      form: {},
       mdl: {},
-
+      confirmLoading: false,
       // 高级搜索 展开/关闭
       advanced: false,
       // 查询参数
@@ -173,17 +232,7 @@ export default {
   methods: {
     handleEdit (record) {
       this.mdl = Object.assign({}, record)
-
-      this.mdl.permissions.forEach(permission => {
-        permission.actionsOptions = permission.actionEntitySet.map(action => {
-          return { label: action.describe, value: action.action, defaultCheck: action.defaultCheck }
-        })
-      })
-
       this.visible = true
-    },
-    handleOk () {
-
     },
     onChange (selectedRowKeys, selectedRows) {
       this.selectedRowKeys = selectedRowKeys
@@ -191,6 +240,25 @@ export default {
     },
     toggleAdvanced () {
       this.advanced = !this.advanced
+    },
+    handleOk () {
+      const { form: { validateFields } } = this
+      this.confirmLoading = true
+      validateFields((errors, values) => {
+        if (!errors) {
+          console.log('values', values)
+          setTimeout(() => {
+            this.visible = false
+            this.confirmLoading = false
+            this.$emit('ok', values)
+          }, 1500)
+        } else {
+          this.confirmLoading = false
+        }
+      })
+    },
+    handleCancel () {
+      this.visible = false
     }
   },
   watch: {
