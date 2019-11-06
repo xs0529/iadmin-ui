@@ -93,14 +93,14 @@
       @ok="handleOk"
       @cancel="handleCancel"
     >
-      <a-form :autoFormCreate="(form)=>{this.form = form}">
+      <a-form :form="form">
 
         <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
           label="id"
         >
-          <a-input placeholder="id" v-model="mdl.id" disabled="disabled" />
+          <a-input placeholder="id" v-model="mdl.id" disabled="disabled" v-decorator="['id']"/>
         </a-form-item>
 
         <a-form-item
@@ -167,7 +167,7 @@ export default {
         xs: { span: 24 },
         sm: { span: 16 }
       },
-      form: {},
+      form: this.$form.createForm(this),
       mdl: {},
       confirmLoading: false,
       // 高级搜索 展开/关闭
@@ -231,7 +231,7 @@ export default {
   },
   methods: {
     handleEdit (record) {
-      this.mdl = Object.assign({}, record)
+      this.form.setFieldsValue(record)
       this.visible = true
     },
     onChange (selectedRowKeys, selectedRows) {
