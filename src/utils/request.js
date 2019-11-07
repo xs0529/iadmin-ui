@@ -35,7 +35,7 @@ const err = (error) => {
       }
     }
   }
-  return Promise.reject(error)
+  return Promise.reject(error.response.data)
 }
 
 // request interceptor

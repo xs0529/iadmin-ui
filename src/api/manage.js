@@ -19,6 +19,22 @@ export function getUserList (parameter) {
   })
 }
 
+export function addUser (parameter) {
+  return axios({
+    url: api.user + '/add',
+    method: 'post',
+    params: parameter
+  })
+}
+
+export function updateUser (parameter) {
+  return axios({
+    url: api.user + '/update',
+    method: 'post',
+    params: parameter
+  })
+}
+
 export function getRoleList (parameter) {
   return axios({
     url: api.role + '/list',

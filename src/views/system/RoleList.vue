@@ -85,7 +85,8 @@ export default {
       columns: [
         {
           title: 'id',
-          dataIndex: 'id'
+          dataIndex: 'id',
+          key: 'id'
         },
         {
           title: '角色名称',

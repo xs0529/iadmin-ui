@@ -42,6 +42,7 @@
             <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
               <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
               <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
+              <a-button style="margin-left: 8px" type="link" icon="plus" @click="handleAdd()">新建</a-button>
               <a @click="toggleAdvanced" style="margin-left: 8px">
                 {{ advanced ? '收起' : '展开' }}
                 <a-icon :type="advanced ? 'up' : 'down'"/>
@@ -56,6 +57,7 @@
       ref="table"
       size="default"
       :columns="columns"
+      rowKey="id"
       :data="loadData"
       :showPagination="true"
     >
@@ -99,8 +101,9 @@
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
           label="id"
+          v-if="!add"
         >
-          <a-input placeholder="id" v-model="mdl.id" disabled="disabled" v-decorator="['id']"/>
+          <a-input placeholder="id" disabled="disabled" v-decorator="['id']"/>
         </a-form-item>
 
         <a-form-item
@@ -108,7 +111,7 @@
           :wrapperCol="wrapperCol"
           label="用户名"
         >
-          <a-input placeholder="起一个名字" v-model="mdl.username" v-decorator="['username', {rules: [{required: true, min: 6, message: '用户名至少为6位！'}]}]"/>
+          <a-input placeholder="请输入用户名" :disabled="!add" v-decorator="['username', {rules: [{required: true, min: 6, message: '用户名至少为6位！'}]}]"/>
         </a-form-item>
 
         <a-form-item
@@ -116,7 +119,7 @@
           :wrapperCol="wrapperCol"
           label="昵称"
         >
-          <a-input placeholder="请输入昵称" v-model="mdl.nickName" v-decorator="['nickName', {rules: [{required: true, min: 1, message: '请输入昵称！'}]}]"/>
+          <a-input placeholder="请输入昵称" v-decorator="['nickName', {rules: [{required: true, min: 1, message: '请输入昵称！'}]}]"/>
         </a-form-item>
 
         <a-form-item
@@ -124,7 +127,7 @@
           :wrapperCol="wrapperCol"
           label="真实姓名"
         >
-          <a-input placeholder="请输入真实姓名" v-model="mdl.trueName" v-decorator="['trueName', {rules: [{required: true, min: 2, message: '请输入真实姓名,至少两位！'}]}]"/>
+          <a-input placeholder="请输入真实姓名" v-decorator="['trueName', {rules: [{required: true, min: 2, message: '请输入真实姓名,至少两位！'}]}]"/>
         </a-form-item>
 
         <a-form-item
@@ -132,10 +135,10 @@
           :wrapperCol="wrapperCol"
           label="状态"
         >
-          <a-select v-model="mdl.state" v-decorator="['state', {rules: [{required: true, message: '请选择状态'}]}]">
-            <a-select-option value="1">正常</a-select-option>
-            <a-select-option value="0">禁用</a-select-option>
-          </a-select>
+          <a-radio-group v-decorator="['state', {rules: [{required: true, message: '请选择状态'}]}]">
+            <a-radio :value="1">正常</a-radio>
+            <a-radio :value="0">禁用</a-radio>
+          </a-radio-group>
         </a-form-item>
 
         <a-divider />
@@ -148,7 +151,7 @@
 <script>
 import { STable } from '@/components'
 // eslint-disable-next-line no-unused-vars
-import { getRoleList, getServiceList, getUserList } from '@/api/manage'
+import { getRoleList, getServiceList, getUserList, addUser, updateUser } from '@/api/manage'
 
 export default {
   name: 'TableList',
@@ -167,6 +170,7 @@ export default {
         xs: { span: 24 },
         sm: { span: 16 }
       },
+      add: false,
       form: this.$form.createForm(this),
       mdl: {},
       confirmLoading: false,
@@ -178,7 +182,8 @@ export default {
       columns: [
         {
           title: 'id',
-          dataIndex: 'id'
+          dataIndex: 'id',
+          key: 'id'
         },
         {
           title: '用户名',
@@ -231,7 +236,14 @@ export default {
   },
   methods: {
     handleEdit (record) {
-      this.form.setFieldsValue(record)
+      this.add = false
+      setTimeout(() => {
+        this.form.setFieldsValue(record)
+      }, 0)
+      this.visible = true
+    },
+    handleAdd () {
+      this.add = true
       this.visible = true
     },
     onChange (selectedRowKeys, selectedRows) {
@@ -246,18 +258,30 @@ export default {
       this.confirmLoading = true
       validateFields((errors, values) => {
         if (!errors) {
-          console.log('values', values)
-          setTimeout(() => {
-            this.visible = false
-            this.confirmLoading = false
-            this.$emit('ok', values)
-          }, 1500)
+          if (this.add) {
+            addUser(this.form.getFieldsValue()).then(() => {
+              this.visible = false
+              this.confirmLoading = false
+              this.$message.success('新增成功！', 2)
+            }).catch((res) => {
+              this.$message.error(res.message, 2)
+              this.confirmLoading = false
+            })
+          } else {
+            updateUser(this.form.getFieldsValue()).then(() => {
+              this.visible = false
+              this.confirmLoading = false
+              this.$message.success('修改成功！', 2)
+            })
+          }
         } else {
           this.confirmLoading = false
         }
       })
     },
     handleCancel () {
+      this.form.resetFields()
+      this.confirmLoading = false
       this.visible = false
     }
   },
