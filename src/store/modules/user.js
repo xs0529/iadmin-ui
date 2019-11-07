@@ -60,6 +60,7 @@ const user = {
       return new Promise((resolve, reject) => {
         getInfo().then(response => {
           const result = response.data
+          result.permissionCodes = result.permissionCodes.concat('default')
           commit('SET_ROLE_LABELS', result.roleLabels)
           commit('SET_PERMISSION_CODES', result.permissionCodes)
           commit('SET_INFO', result.userInfo)
