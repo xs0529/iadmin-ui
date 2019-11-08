@@ -35,6 +35,13 @@ export function updateUser (parameter) {
   })
 }
 
+export function removeUser (parameter) {
+  return axios({
+    url: api.user + '/remove/' + parameter,
+    method: 'post'
+  })
+}
+
 export function getRoleList (parameter) {
   return axios({
     url: api.role + '/list',

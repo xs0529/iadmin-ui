@@ -13,7 +13,7 @@
         @change="handleTabClick"
       >
         <a-tab-pane key="tab1" tab="账号密码登录">
-          <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" message="账户或密码错误（admin/ant.design )" />
+          <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" :message="errorMessage" />
           <a-form-item>
             <a-input
               size="large"
@@ -116,6 +116,7 @@
 </template>
 
 <script>
+// eslint-disable-next-line no-unused-vars
 import md5 from 'md5'
 import TwoStepCaptcha from '@/components/tools/TwoStepCaptcha'
 import { mapActions } from 'vuex'
@@ -128,6 +129,7 @@ export default {
   },
   data () {
     return {
+      errorMessage: '',
       customActiveKey: 'tab1',
       loginBtn: false,
       // login type: 0 email, 1 username, 2 telephone
@@ -187,7 +189,6 @@ export default {
 
       validateFields(validateFieldsKey, { force: true }, (err, values) => {
         if (!err) {
-          console.log('login form', values)
           const loginParams = { ...values }
           delete loginParams.username
           loginParams[!state.loginType ? 'email' : 'username'] = values.username
@@ -272,10 +273,11 @@ export default {
       this.isLoginError = false
     },
     requestFailed (err) {
+      this.errorMessage = err.message
       this.isLoginError = true
       this.$notification['error']({
         message: '错误',
-        description: ((err.response || {}).data || {}).message || '请求出现错误，请稍后再试',
+        description: err.message || '请求出现错误，请稍后再试',
         duration: 4
       })
     }

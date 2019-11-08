@@ -27,6 +27,10 @@ export default {
       type: Number,
       default: 1
     },
+    total: {
+      type: Number,
+      default: 1
+    },
     pageSize: {
       type: Number,
       default: 10
@@ -100,6 +104,13 @@ export default {
       Object.assign(this.localPagination, {
         showSizeChanger: val
       })
+    },
+    showTotal (total) {
+      Object.assign(this.localPagination, {
+        showTotal: (total) => {
+          return '一共' + total + '条'
+        }
+      })
     }
   },
   created () {
@@ -108,7 +119,8 @@ export default {
     this.localPagination = ['auto', true].includes(this.showPagination) && Object.assign({}, this.localPagination, {
       current: localPageNum,
       pageSize: this.pageSize,
-      showSizeChanger: this.showSizeChanger
+      showSizeChanger: this.showSizeChanger,
+      showTotal: this.total
     }) || false
     console.log('this.localPagination', this.localPagination)
     this.needTotalList = this.initTotalList(this.columns)
@@ -179,6 +191,7 @@ export default {
             this.localPagination = false
           }
           console.log('loadData -> this.localPagination', this.localPagination)
+          this.total = r.total
           this.localDataSource = r.records // 返回结果中的数组数据
           this.localLoading = false
         })

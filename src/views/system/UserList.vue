@@ -76,10 +76,16 @@
               <a href="javascript:;">详情</a>
             </a-menu-item>
             <a-menu-item>
-              <a href="javascript:;">禁用</a>
+                  <a-popconfirm title="确认禁用？" @confirm="disableUser(record)">
+                <a-icon slot="icon" type="question-circle-o" style="color: red" />
+                 <a href="javascript:;">禁用</a>
+                </a-popconfirm>
             </a-menu-item>
             <a-menu-item>
-              <a href="javascript:;">删除</a>
+              <a-popconfirm title="确认删除？" @confirm="removeUser(record)">
+                <a-icon slot="icon" type="question-circle-o" style="color: red" />
+                 <a href="javascript:;">删除</a>
+                </a-popconfirm>
             </a-menu-item>
           </a-menu>
         </a-dropdown>
@@ -133,6 +139,17 @@
         <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
+          label="性别"
+        >
+          <a-radio-group v-decorator="['sex', {rules: [{required: true, message: '请选择性别'}]}]">
+            <a-radio :value="'男'">男</a-radio>
+            <a-radio :value="'女'">女</a-radio>
+          </a-radio-group>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
           label="状态"
         >
           <a-radio-group v-decorator="['state', {rules: [{required: true, message: '请选择状态'}]}]">
@@ -140,7 +157,6 @@
             <a-radio :value="0">禁用</a-radio>
           </a-radio-group>
         </a-form-item>
-
         <a-divider />
 
       </a-form>
@@ -151,7 +167,7 @@
 <script>
 import { STable } from '@/components'
 // eslint-disable-next-line no-unused-vars
-import { getRoleList, getServiceList, getUserList, addUser, updateUser } from '@/api/manage'
+import { getRoleList, getServiceList, getUserList, addUser, updateUser, removeUser } from '@/api/manage'
 
 export default {
   name: 'TableList',
@@ -263,6 +279,8 @@ export default {
               this.visible = false
               this.confirmLoading = false
               this.$message.success('新增成功！', 2)
+              this.$refs.table.refresh(true)
+              this.form.resetFields()
             }).catch((res) => {
               this.$message.error(res.message, 2)
               this.confirmLoading = false
@@ -272,11 +290,35 @@ export default {
               this.visible = false
               this.confirmLoading = false
               this.$message.success('修改成功！', 2)
+              this.$refs.table.refresh()
+              this.form.resetFields()
+            }).catch((res) => {
+              this.$message.error(res.message, 2)
+              this.confirmLoading = false
             })
           }
         } else {
           this.confirmLoading = false
         }
+      })
+    },
+    disableUser (record) {
+      record.createTime = null
+      record.updateTime = null
+      record.state = 0
+      updateUser(record).then(() => {
+        this.$message.success('禁用成功！', 2)
+        this.$refs.table.refresh()
+      }).catch((res) => {
+        this.$message.error(res.message, 2)
+      })
+    },
+    removeUser (record) {
+      removeUser(record.id).then(() => {
+        this.$message.success('删除成功！', 2)
+        this.$refs.table.refresh()
+      }).catch((res) => {
+        this.$message.error(res.message, 2)
       })
     },
     handleCancel () {
