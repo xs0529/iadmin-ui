@@ -42,7 +42,7 @@
             <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
               <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
               <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
-              <a-button style="margin-left: 8px" type="link" icon="plus" @click="handleAdd()">新建</a-button>
+              <a-button style="margin-left: 8px" type="link" icon="plus" @click="handleAdd()" v-hasPermission="'SysUser:add'">新建</a-button>
               <a @click="toggleAdvanced" style="margin-left: 8px">
                 {{ advanced ? '收起' : '展开' }}
                 <a-icon :type="advanced ? 'up' : 'down'"/>
@@ -65,7 +65,7 @@
         <a-tag :color="text===1 ? 'green' : 'volcano'" v-text="text===1 ? '正常' : '禁用'"></a-tag>
       </span>
       <span slot="action" slot-scope="text, record">
-        <a @click="handleEdit(record)">编辑</a>
+        <a @click="handleEdit(record)" v-hasPermission="'SysUser:update'">编辑</a>
         <a-divider type="vertical" />
         <a-dropdown>
           <a class="ant-dropdown-link">
@@ -75,17 +75,17 @@
             <a-menu-item>
               <a href="javascript:;">详情</a>
             </a-menu-item>
-            <a-menu-item>
-                  <a-popconfirm title="确认禁用？" @confirm="disableUser(record)">
+            <a-menu-item v-hasPermission="'SysUser:update'">
+              <a-popconfirm title="确认禁用？" @confirm="disableUser(record)">
                 <a-icon slot="icon" type="question-circle-o" style="color: red" />
-                 <a href="javascript:;">禁用</a>
-                </a-popconfirm>
+                <a href="javascript:;">禁用</a>
+              </a-popconfirm>
             </a-menu-item>
-            <a-menu-item>
+            <a-menu-item v-hasPermission="'SysUser:del'">
               <a-popconfirm title="确认删除？" @confirm="removeUser(record)">
                 <a-icon slot="icon" type="question-circle-o" style="color: red" />
-                 <a href="javascript:;">删除</a>
-                </a-popconfirm>
+                <a href="javascript:;">删除</a>
+              </a-popconfirm>
             </a-menu-item>
           </a-menu>
         </a-dropdown>
@@ -157,6 +157,19 @@
             <a-radio :value="0">禁用</a-radio>
           </a-radio-group>
         </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="角色">
+          <a-select
+            mode="multiple"
+            placeholder="请选择角色"
+            v-decorator="['roleIds']"
+          >
+            <a-select-option v-for="item in roles" :key="item.id" :value="item.id">{{ item.roleName }}</a-select-option>
+          </a-select>
+        </a-form-item>
         <a-divider />
 
       </a-form>
@@ -167,7 +180,7 @@
 <script>
 import { STable } from '@/components'
 // eslint-disable-next-line no-unused-vars
-import { getRoleList, getServiceList, getUserList, addUser, updateUser, removeUser } from '@/api/manage'
+import { getRoleList, getServiceList, getUserList, addUser, updateUser, removeUser, getRoleByUser } from '@/api/manage'
 
 export default {
   name: 'TableList',
@@ -189,6 +202,7 @@ export default {
       add: false,
       form: this.$form.createForm(this),
       mdl: {},
+      roles: {},
       confirmLoading: false,
       // 高级搜索 展开/关闭
       advanced: false,
@@ -245,14 +259,29 @@ export default {
       selectedRows: []
     }
   },
+  mounted () {
+    const param = {}
+    param.page = 1
+    param.size = 100
+    getRoleList(param).then(res => {
+      this.roles = res.data.records
+    })
+  },
   created () {
     getServiceList().then(res => {
       console.log('getServiceList.call()', res)
     })
   },
   methods: {
-    handleEdit (record) {
+    async handleEdit (record) {
+      record.roleIds = []
       this.add = false
+      const roleIds = await getRoleByUser(record.id)
+      if (roleIds.data) {
+        for (const value of roleIds.data) {
+          record.roleIds.push(value.id)
+        }
+      }
       setTimeout(() => {
         this.form.setFieldsValue(record)
       }, 0)
@@ -302,17 +331,19 @@ export default {
         }
       })
     },
+    // 禁用用户方法
     disableUser (record) {
-      record.createTime = null
-      record.updateTime = null
+      delete record.createTime
       record.state = 0
       updateUser(record).then(() => {
         this.$message.success('禁用成功！', 2)
-        this.$refs.table.refresh()
       }).catch((res) => {
         this.$message.error(res.message, 2)
+      }).then(() => {
+        this.$refs.table.refresh()
       })
     },
+    // 删除用户方法
     removeUser (record) {
       removeUser(record.id).then(() => {
         this.$message.success('删除成功！', 2)
@@ -321,6 +352,7 @@ export default {
         this.$message.error(res.message, 2)
       })
     },
+    // 取消按钮操作
     handleCancel () {
       this.form.resetFields()
       this.confirmLoading = false

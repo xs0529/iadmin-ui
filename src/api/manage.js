@@ -1,10 +1,11 @@
 import { axios } from '@/utils/request'
+import qs from 'qs'
 
 const api = {
   user: '/sysUser',
   role: '/sysRole',
   service: '/service',
-  permission: '/permission',
+  permission: '/sysPermission',
   permissionNoPager: '/permission/no-pager',
   orgTree: '/org/tree'
 }
@@ -23,7 +24,10 @@ export function addUser (parameter) {
   return axios({
     url: api.user + '/add',
     method: 'post',
-    params: parameter
+    params: parameter,
+    paramsSerializer: params => {
+      return qs.stringify(params, { indices: false })
+    }
   })
 }
 
@@ -31,7 +35,10 @@ export function updateUser (parameter) {
   return axios({
     url: api.user + '/update',
     method: 'post',
-    params: parameter
+    params: parameter,
+    paramsSerializer: params => {
+      return qs.stringify(params, { indices: false })
+    }
   })
 }
 
@@ -47,6 +54,54 @@ export function getRoleList (parameter) {
     url: api.role + '/list',
     method: 'post',
     params: parameter
+  })
+}
+
+export function getRoleByUser (parameter) {
+  return axios({
+    url: api.role + '/getByUser/' + parameter,
+    method: 'get'
+  })
+}
+
+export function getPermissionVo () {
+  return axios({
+    url: api.permission + '/getTreeVO',
+    method: 'get'
+  })
+}
+
+export function getPermissionByRoleId (parameter) {
+  return axios({
+    url: api.permission + '/getByRoleId/' + parameter,
+    method: 'post'
+  })
+}
+
+export function addRole (parameter) {
+  return axios({
+    url: api.role + '/add',
+    method: 'post',
+    params: parameter
+
+  })
+}
+
+export function updateRole (parameter) {
+  return axios({
+    url: api.role + '/update',
+    method: 'post',
+    params: parameter,
+    paramsSerializer: params => {
+      return qs.stringify(params, { indices: false })
+    }
+  })
+}
+
+export function removeRole (parameter) {
+  return axios({
+    url: api.role + '/remove/' + parameter,
+    method: 'post'
   })
 }
 

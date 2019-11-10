@@ -17,6 +17,7 @@
             <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
               <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
               <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
+              <a-button style="margin-left: 8px" type="link" icon="plus" @click="handleAdd()" v-hasPermission="'SysRole:add'">新建</a-button>
             </span>
           </a-col>
         </a-row>
@@ -26,33 +27,88 @@
     <s-table
       ref="table"
       size="default"
+      rowKey="id"
       :columns="columns"
       :data="loadData"
     >
       <span slot="action" slot-scope="text, record">
-        <a @click="$refs.modal.edit(record)">编辑</a>
+        <a @click="handleEdit(record)" v-hasPermission="'SysRole:update'">编辑</a>
         <a-divider type="vertical" />
-        <a-dropdown>
-          <a class="ant-dropdown-link">
-            更多 <a-icon type="down" />
-          </a>
-          <a-menu slot="overlay">
-            <a-menu-item>
-              <a href="javascript:;">详情</a>
-            </a-menu-item>
-            <a-menu-item>
-              <a href="javascript:;">禁用</a>
-            </a-menu-item>
-            <a-menu-item>
-              <a href="javascript:;">删除</a>
-            </a-menu-item>
-          </a-menu>
-        </a-dropdown>
+        <a @click="showDrawer(record)" v-hasPermission="'SysRole:update'">授权</a>
+        <a-divider type="vertical" />
+        <a-popconfirm title="确认删除？" @confirm="removeRole(record)">
+          <a-icon slot="icon" type="question-circle-o" style="color: red" />
+          <a href="javascript:;">删除</a>
+        </a-popconfirm>
       </span>
     </s-table>
 
-    <role-modal ref="modal" @ok="handleOk"></role-modal>
+    <a-modal
+      title="操作"
+      style="top: 20px;"
+      :width="800"
+      v-model="visible"
+      :confirmLoading="confirmLoading"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
+      <a-form :form="form">
 
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="id"
+          v-if="!add"
+        >
+          <a-input placeholder="id" disabled="disabled" v-decorator="['id']"/>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="角色标识"
+        >
+          <a-input placeholder="请输入角色名称" :disabled="!add" v-decorator="['label', {rules: [{required: true, pattern: /^[a-zA-Z]+$/, message: '请输入角色标识，只能是英文'}]}]"/>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="角色名称"
+        >
+          <a-input placeholder="请输入角色名称" v-decorator="['roleName', {rules: [{required: true, min: 2, message: '请输入角色名称，至少2位！'}]}]"/>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="角色备注"
+        >
+          <a-input placeholder="请输入角色备注" v-decorator="['comments', {rules: [{required: false, min: 2}]}]"/>
+        </a-form-item>
+
+      </a-form>
+    </a-modal>
+
+    <a-drawer
+      title="授权"
+      placement="right"
+      :closable="true"
+      :width="500"
+      @close="closeDrawer"
+      :visible="drawerVisible"
+    >
+      <a-popconfirm title="确认赋予该角色所选授权？" @confirm="setRolePermission()">
+        <a v-hasPermission="'SysRole:update'">确认授权</a>
+        <a href="javascript:;">授权</a>
+      </a-popconfirm>
+      <a-tree
+        :checkable="true"
+        :checkStrictly="true"
+        v-model="selectedKeys"
+        :treeData="permissionVoTree"
+      />
+    </a-drawer>
   </a-card>
 </template>
 
@@ -60,7 +116,7 @@
 import { STable } from '@/components'
 import RoleModal from './modules/RoleModal'
 // eslint-disable-next-line no-unused-vars
-import { getRoleList } from '@/api/manage'
+import { getRoleList, addRole, updateRole, removeRole, getPermissionVo, getPermissionByRoleId } from '@/api/manage'
 
 export default {
   name: 'TableList',
@@ -71,12 +127,21 @@ export default {
   data () {
     return {
       // description: '列表使用场景：后台管理中的权限管理以及角色管理，可用于基于 RBAC 设计的角色权限控制，颗粒度细到每一个操作类型。',
-
+      labelCol: {
+        xs: { span: 24 },
+        sm: { span: 5 }
+      },
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 16 }
+      },
       visible: false,
-
-      form: null,
+      drawerVisible: false,
+      defaultExpandAll: false,
+      add: false,
+      form: this.$form.createForm(this),
       mdl: {},
-
+      confirmLoading: false,
       // 高级搜索 展开/关闭
       advanced: false,
       // 查询参数
@@ -127,25 +192,61 @@ export default {
           })
       },
       selectedRowKeys: [],
-      selectedRows: []
+      selectedRows: [],
+      permissionVoTree: [],
+      selectedKeys: []
     }
+  },
+  created () {
+    getPermissionVo().then(res => {
+      this.permissionVoTree = res.data
+      this.renderTreeNodes(this.permissionVoTree)
+    })
   },
   methods: {
     handleEdit (record) {
-      this.mdl = Object.assign({}, record)
-
-      this.mdl.permissions.forEach(permission => {
-        permission.actionsOptions = permission.actionEntitySet.map(action => {
-          return { label: action.describe, value: action.action, defaultCheck: action.defaultCheck }
-        })
-      })
-
-      console.log(this.mdl)
+      this.add = false
+      setTimeout(() => {
+        this.form.setFieldsValue(record)
+      }, 0)
+      this.visible = true
+    },
+    handleAdd () {
+      this.add = true
       this.visible = true
     },
     handleOk () {
-      // 新增/修改 成功时，重载列表
-      this.$refs.table.refresh()
+      const { form: { validateFields } } = this
+      this.confirmLoading = true
+      validateFields((errors, values) => {
+        if (!errors) {
+          if (this.add) {
+            addRole(this.form.getFieldsValue()).then(() => {
+              this.visible = false
+              this.confirmLoading = false
+              this.$message.success('新增成功！', 2)
+              this.$refs.table.refresh(true)
+              this.form.resetFields()
+            }).catch((res) => {
+              this.$message.error(res.message, 2)
+              this.confirmLoading = false
+            })
+          } else {
+            updateRole(this.form.getFieldsValue()).then(() => {
+              this.visible = false
+              this.confirmLoading = false
+              this.$message.success('修改成功！', 2)
+              this.$refs.table.refresh()
+              this.form.resetFields()
+            }).catch((res) => {
+              this.$message.error(res.message, 2)
+              this.confirmLoading = false
+            })
+          }
+        } else {
+          this.confirmLoading = false
+        }
+      })
     },
     onChange (selectedRowKeys, selectedRows) {
       this.selectedRowKeys = selectedRowKeys
@@ -153,6 +254,57 @@ export default {
     },
     toggleAdvanced () {
       this.advanced = !this.advanced
+    },
+    // 删除方法
+    removeRole (record) {
+      removeRole(record.id).then(() => {
+        this.$message.success('删除成功！', 2)
+        this.$refs.table.refresh()
+      }).catch((res) => {
+        this.$message.error(res.message, 2)
+      })
+    },
+    // 取消按钮操作
+    handleCancel () {
+      this.form.resetFields()
+      this.confirmLoading = false
+      this.visible = false
+    },
+    showDrawer (record) {
+      this.mdl = record
+      getPermissionByRoleId(record.id).then(res => {
+        if (res.data) {
+          for (const value of res.data) {
+            this.selectedKeys.push(value.id)
+          }
+        }
+      })
+      this.drawerVisible = true
+    },
+    closeDrawer () {
+      this.mdl = {}
+      this.selectedKeys = []
+      this.drawerVisible = false
+    },
+    setRolePermission () {
+      this.mdl.permissionIdList = this.selectedKeys.checked
+      delete this.mdl.createTime
+      delete this.mdl.updateTime
+      updateRole(this.mdl).then(() => {
+        this.$message.success('修改成功！', 2)
+      }).catch((res) => {
+        this.$message.error(res.message, 2)
+      })
+    },
+    renderTreeNodes (data) {
+      data.map(item => {
+        item.key = item.id
+        item.title = item.name
+        item.children = item.childs
+        if (item.children) {
+          this.renderTreeNodes(item.children)
+        }
+      })
     }
   },
   watch: {
