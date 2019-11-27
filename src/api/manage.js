@@ -7,7 +7,9 @@ const api = {
   service: '/service',
   permission: '/sysPermission',
   permissionNoPager: '/permission/no-pager',
-  orgTree: '/org/tree'
+  orgTree: '/org/tree',
+  loginLog: '/sysLoginLog',
+  sysLog: '/sysLog'
 }
 
 export default api
@@ -57,6 +59,36 @@ export function getRoleList (parameter) {
   })
 }
 
+export function removeLoginLog (parameter) {
+  return axios({
+    url: api.loginLog + '/remove/' + parameter,
+    method: 'post'
+  })
+}
+
+export function getLoginLogList (parameter) {
+  return axios({
+    url: api.loginLog + '/list',
+    method: 'post',
+    params: parameter
+  })
+}
+
+export function removeSysLog (parameter) {
+  return axios({
+    url: api.sysLog + '/remove/' + parameter,
+    method: 'post'
+  })
+}
+
+export function getSysLogList (parameter) {
+  return axios({
+    url: api.sysLog + '/list',
+    method: 'post',
+    params: parameter
+  })
+}
+
 export function getRoleByUser (parameter) {
   return axios({
     url: api.role + '/getByUser/' + parameter,
@@ -67,6 +99,13 @@ export function getRoleByUser (parameter) {
 export function getPermissionVo () {
   return axios({
     url: api.permission + '/getTreeVO',
+    method: 'get'
+  })
+}
+
+export function getPermissionListTreeVO () {
+  return axios({
+    url: api.permission + '/getListTreeVO',
     method: 'get'
   })
 }

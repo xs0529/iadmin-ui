@@ -338,6 +338,29 @@ export const asyncRouterMap = [
             meta: { title: '权限列表', keepAlive: true, permission: [ 'SysPermission' ] }
           }
         ]
+      },
+
+      // 系统监控
+      {
+        path: '/monitor',
+        name: 'monitorPage',
+        component: PageView,
+        meta: { title: '系统监控', icon: 'slack', permission: [ 'SysMonitor' ] },
+        redirect: '/other/icon-selector',
+        children: [
+          {
+            path: '/monitor/list/login-list',
+            name: 'LoginLogList',
+            component: () => import('@/views/monitor/LoginLogList'),
+            meta: { title: '登录日志', keepAlive: true, permission: [ 'SysLoginLog' ] }
+          },
+          {
+            path: '/monitor/list/sysLog-list',
+            name: 'SysLogList',
+            component: () => import('@/views/monitor/SysLogList'),
+            meta: { title: '操作日志', keepAlive: true, permission: [ 'SysLog' ] }
+          }
+        ]
       }
     ]
   },

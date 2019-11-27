@@ -300,7 +300,6 @@ export default {
       data.map(item => {
         item.key = item.id
         item.title = item.name
-        item.children = item.childs
         if (item.children) {
           this.renderTreeNodes(item.children)
         }

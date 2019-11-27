@@ -27,7 +27,6 @@
       rowKey="id"
       :columns="columns"
       :data="loadData"
-      :showPagination="false"
     >
       <span slot="action" slot-scope="text, record">
         <a-popconfirm title="确认删除？" @confirm="removeRole(record)">
@@ -42,7 +41,7 @@
 <script>
 import { STable } from '@/components'
 // eslint-disable-next-line no-unused-vars
-import { removeLoginLog, getPermissionListTreeVO } from '@/api/manage'
+import { removeLoginLog, getLoginLogList } from '@/api/manage'
 
 export default {
   name: 'TableList',
@@ -80,38 +79,28 @@ export default {
           key: 'id'
         },
         {
-          title: '名称',
-          dataIndex: 'permissionName'
+          title: '用户名',
+          dataIndex: 'username'
         },
         {
-          title: '授权标识',
-          dataIndex: 'permissionCode'
+          title: '登录地址',
+          dataIndex: 'address'
         },
         {
-          title: '权限类型',
-          dataIndex: 'type'
+          title: '登录ip',
+          dataIndex: 'ip'
         },
         {
-          title: 'url',
-          dataIndex: 'url'
+          title: '操作系统',
+          dataIndex: 'system'
         },
         {
-          title: '请求方式',
-          dataIndex: 'requestWay'
+          title: '登录浏览器',
+          dataIndex: 'browser'
         },
         {
-          title: '组件地址',
-          dataIndex: 'componentUrl'
-        },
-        {
-          title: '创建时间',
-          dataIndex: 'createTime',
-          sorter: true,
-          customRender: (text) => new Date(text).toLocaleString()
-        },
-        {
-          title: '修改时间',
-          dataIndex: 'updateTime',
+          title: '登录时间',
+          dataIndex: 'loginTime',
           sorter: true,
           customRender: (text) => new Date(text).toLocaleString()
         },
@@ -124,7 +113,7 @@ export default {
       ],
       // 加载数据方法 必须为 Promise 对象
       loadData: parameter => {
-        return getPermissionListTreeVO(Object.assign(parameter, this.queryParam))
+        return getLoginLogList(Object.assign(parameter, this.queryParam))
           .then(res => {
             return res.data
           })
@@ -161,6 +150,10 @@ export default {
     }
   },
   watch: {
+    'time': function () {
+      this.queryParam.beginTime = this.time[0].format('yyyy-MM-dd')
+      this.queryParam.endTime = this.time[1].format('yyyy-MM-dd')
+    }
     /*
       'selectedRows': function (selectedRows) {
         this.needTotalList = this.needTotalList.map(item => {
