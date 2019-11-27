@@ -30,65 +30,15 @@
       rowKey="id"
       :columns="columns"
       :data="loadData"
+      :scroll="{ x: 2500, y: 1000 }"
     >
       <span slot="action" slot-scope="text, record">
-        <a @click="handleEdit(record)" v-hasPermission="'SysRole:update'">编辑</a>
-        <a-divider type="vertical" />
-        <a @click="showDrawer(record)" v-hasPermission="'SysRole:update'">授权</a>
-        <a-divider type="vertical" />
         <a-popconfirm title="确认删除？" @confirm="removeRole(record)">
           <a-icon slot="icon" type="question-circle-o" style="color: red" />
           <a href="javascript:;">删除</a>
         </a-popconfirm>
       </span>
     </s-table>
-
-    <a-modal
-      title="操作"
-      style="top: 20px;"
-      :width="800"
-      v-model="visible"
-      :confirmLoading="confirmLoading"
-      @ok="handleOk"
-      @cancel="handleCancel"
-    >
-      <a-form :form="form">
-
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="id"
-          v-if="!add"
-        >
-          <a-input placeholder="id" disabled="disabled" v-decorator="['id']"/>
-        </a-form-item>
-
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="角色标识"
-        >
-          <a-input placeholder="请输入角色名称" :disabled="!add" v-decorator="['label', {rules: [{required: true, pattern: /^[a-zA-Z]+$/, message: '请输入角色标识，只能是英文'}]}]"/>
-        </a-form-item>
-
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="角色名称"
-        >
-          <a-input placeholder="请输入角色名称" v-decorator="['roleName', {rules: [{required: true, min: 2, message: '请输入角色名称，至少2位！'}]}]"/>
-        </a-form-item>
-
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="角色备注"
-        >
-          <a-input placeholder="请输入角色备注" v-decorator="['comments', {rules: [{required: false, min: 2}]}]"/>
-        </a-form-item>
-
-      </a-form>
-    </a-modal>
   </a-card>
 </template>
 
@@ -129,53 +79,65 @@ export default {
         {
           title: 'id',
           dataIndex: 'id',
-          key: 'id'
+          key: 'id',
+          width: 30
         },
         {
           title: '用户名',
-          dataIndex: 'username'
+          dataIndex: 'username',
+          width: 70
         },
         {
           title: 'ip',
-          dataIndex: 'requestIp'
+          dataIndex: 'requestIp',
+          width: 70
         },
         {
           title: '地址',
-          dataIndex: 'address'
+          dataIndex: 'address',
+          width: 150
         },
         {
           title: '操作方法',
-          dataIndex: 'method'
+          dataIndex: 'method',
+          width: 500
         },
         {
           title: '参数',
-          dataIndex: 'params'
+          dataIndex: 'params',
+          width: 200
         },
         {
           title: '用时',
-          dataIndex: 'time'
+          dataIndex: 'time',
+          width: 30
         },
         {
           title: '日志类型',
-          dataIndex: 'logType'
+          dataIndex: 'logType',
+          width: 30
         },
         {
           title: '日志级别',
-          dataIndex: 'logLevel'
+          dataIndex: 'logLevel',
+          width: 70
         },
         {
           title: '说明',
-          dataIndex: 'description'
+          dataIndex: 'description',
+          width: 200
         },
         {
           title: '错误详情',
-          dataIndex: 'exceptionDetail'
+          dataIndex: 'exceptionDetail',
+          width: 200
         },
         {
           title: '创建时间',
           dataIndex: 'createTime',
           sorter: true,
-          customRender: (text) => new Date(text).toLocaleString()
+          customRender: (text) => new Date(text).toLocaleString(),
+          width: 150
         },
         {
           title: '操作',

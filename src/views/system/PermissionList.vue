@@ -4,12 +4,9 @@
       <a-form layout="inline">
         <a-row :gutter="48">
           <a-col :md="8" :sm="24">
-            <a-form-item label="用户名">
-              <a-input v-model="queryParam.username" placeholder="请输入"/>
+            <a-form-item label="权限名称">
+              <a-input v-model="queryParam.permissionName" placeholder="请输入"/>
             </a-form-item>
-          </a-col>
-          <a-col :md="8" :sm="24">
-            <a-range-picker @change="onChange" v-model="time"/>
           </a-col>
           <a-col :md="!advanced && 8 || 24" :sm="24">
             <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
@@ -25,6 +22,7 @@
       ref="table"
       size="default"
       rowKey="id"
+      :scroll="{ x: 1500, y: 300 }"
       :columns="columns"
       :data="loadData"
       :showPagination="false"
@@ -80,7 +78,7 @@ export default {
           key: 'id'
         },
         {
-          title: '名称',
+          title: '权限名称',
           dataIndex: 'permissionName'
         },
         {
