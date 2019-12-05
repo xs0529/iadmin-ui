@@ -150,7 +150,7 @@
         <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
-          label="状态"
+          label="性别"
         >
           <a-radio-group v-decorator="['state', {rules: [{required: true, message: '请选择状态'}]}]">
             <a-radio :value="1">正常</a-radio>
@@ -268,9 +268,9 @@ export default {
     })
   },
   created () {
-    getServiceList().then(res => {
-      console.log('getServiceList.call()', res)
-    })
+    for (let i = 0, len = this.columns.length; i < len; i++) {
+      this.columns[i].align = 'center'
+    }
   },
   methods: {
     async handleEdit (record) {

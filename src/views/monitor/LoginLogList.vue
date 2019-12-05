@@ -14,7 +14,7 @@
           <a-col :md="!advanced && 8 || 24" :sm="24">
             <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
               <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
-              <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
+              <a-button style="margin-left: 8px" @click="() => {queryParam = {}, time = []}">重置</a-button>
             </span>
           </a-col>
         </a-row>
@@ -124,6 +124,11 @@ export default {
       selectedKeys: []
     }
   },
+  created () {
+    for (let i = 0, len = this.columns.length; i < len; i++) {
+      this.columns[i].align = 'center'
+    }
+  },
   methods: {
     handleEdit (record) {
       this.add = false
@@ -151,8 +156,8 @@ export default {
   },
   watch: {
     'time': function () {
-      this.queryParam.beginTime = this.time[0].format('yyyy-MM-dd')
-      this.queryParam.endTime = this.time[1].format('yyyy-MM-dd')
+      this.queryParam.beginTime = this.time[0].format('YYYY-MM-DD')
+      this.queryParam.endTime = this.time[1].format('YYYY-MM-DD')
     }
     /*
       'selectedRows': function (selectedRows) {
@@ -169,3 +174,14 @@ export default {
   }
 }
 </script>
+
+<style>
+  .ant-table-tbody > tr > td {
+    max-width: 110px;
+    border-bottom: 0;
+    text-align: center !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>

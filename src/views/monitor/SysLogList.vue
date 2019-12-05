@@ -30,7 +30,7 @@
       rowKey="id"
       :columns="columns"
       :data="loadData"
-      :scroll="{ x: 2500, y: 1000 }"
+      :scroll="{ x: '150%'}"
     >
       <span slot="action" slot-scope="text, record">
         <a-popconfirm title="确认删除？" @confirm="removeRole(record)">
@@ -79,71 +79,60 @@ export default {
         {
           title: 'id',
           dataIndex: 'id',
-          key: 'id',
-          width: 30
+          key: 'id'
         },
         {
           title: '用户名',
-          dataIndex: 'username',
-          width: 70
+          dataIndex: 'username'
         },
         {
           title: 'ip',
-          dataIndex: 'requestIp',
-          width: 70
+          dataIndex: 'requestIp'
         },
         {
           title: '地址',
+          align: 'center',
           dataIndex: 'address',
-          width: 150
+          customRender: (text) => <title title={text} style="display: inline-block;">{text}</title>
         },
         {
           title: '操作方法',
           dataIndex: 'method',
-          width: 500
+          customRender: (text) => <title title={text} style="display: inline-block;">{text}</title>
         },
         {
           title: '参数',
           dataIndex: 'params',
-          width: 200
+          customRender: (text) => <title title={text} style="display: inline-block;">{text}</title>
         },
         {
           title: '用时',
-          dataIndex: 'time',
-          width: 30
-        },
-        {
-          title: '日志类型',
-          dataIndex: 'logType',
-          width: 30
+          dataIndex: 'time'
         },
         {
           title: '日志级别',
-          dataIndex: 'logLevel',
-          width: 70
+          dataIndex: 'logLevel'
         },
         {
           title: '说明',
-          dataIndex: 'description',
-          width: 200
+          dataIndex: 'description'
         },
         {
           title: '错误详情',
-          dataIndex: 'exceptionDetail',
-          width: 200
+          dataIndex: 'exceptionDetail'
         },
         {
           title: '创建时间',
           dataIndex: 'createTime',
           sorter: true,
-          customRender: (text) => new Date(text).toLocaleString(),
-          width: 150
+          customRender: (text) => new Date(text).toLocaleString()
         },
         {
           title: '操作',
           width: '150px',
           dataIndex: 'action',
-          scopedSlots: { customRender: 'action' }
+          scopedSlots: { customRender: 'action' },
+          fixed: 'right'
         }
       ],
       // 加载数据方法 必须为 Promise 对象
@@ -157,6 +146,11 @@ export default {
       selectedRows: [],
       permissionVoTree: [],
       selectedKeys: []
+    }
+  },
+  created () {
+    for (let i = 0, len = this.columns.length; i < len; i++) {
+      this.columns[i].align = 'center'
     }
   },
   methods: {
@@ -182,6 +176,11 @@ export default {
       }).catch((res) => {
         this.$message.error(res.message, 2)
       })
+    },
+    showTitle (text) {
+      return '      <div :title="record.address" :style="{maxWidth: \'600px\',whiteSpace: \'nowrap\',textOverflow: \'ellipsis\',overflow: \'hidden\', wordWrap: \'break-word\', wordBreak: \'break-all\' }" slot="titleShow" slot-scope="text, record">\n' +
+        text +
+        '      </div>'
     }
   },
   watch: {
@@ -200,3 +199,14 @@ export default {
   }
 }
 </script>
+
+<style>
+  .ant-table-tbody > tr > td {
+    max-width: 110px;
+    border-bottom: 0;
+    text-align: center !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>

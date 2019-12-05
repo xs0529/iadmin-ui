@@ -22,11 +22,14 @@
       ref="table"
       size="default"
       rowKey="id"
-      :scroll="{ x: 1500, y: 300 }"
       :columns="columns"
       :data="loadData"
       :showPagination="false"
+      :scroll="{ x: '150%'}"
     >
+      <span slot="type" slot-scope="text">
+        <a-tag :color="text===1 ? 'green' : 'blue'" v-text="text===1 ? '前端菜单' : '后端接口'"></a-tag>
+      </span>
       <span slot="action" slot-scope="text, record">
         <a-popconfirm title="确认删除？" @confirm="removeRole(record)">
           <a-icon slot="icon" type="question-circle-o" style="color: red" />
@@ -87,7 +90,8 @@ export default {
         },
         {
           title: '权限类型',
-          dataIndex: 'type'
+          dataIndex: 'type',
+          scopedSlots: { customRender: 'type' }
         },
         {
           title: 'url',
@@ -117,7 +121,8 @@ export default {
           title: '操作',
           width: '150px',
           dataIndex: 'action',
-          scopedSlots: { customRender: 'action' }
+          scopedSlots: { customRender: 'action' },
+          fixed: 'right'
         }
       ],
       // 加载数据方法 必须为 Promise 对象
@@ -131,6 +136,11 @@ export default {
       selectedRows: [],
       permissionVoTree: [],
       selectedKeys: []
+    }
+  },
+  created () {
+    for (let i = 0, len = this.columns.length; i < len; i++) {
+      this.columns[i].align = 'center'
     }
   },
   methods: {

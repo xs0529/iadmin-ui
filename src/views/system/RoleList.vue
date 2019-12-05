@@ -159,7 +159,8 @@ export default {
         },
         {
           title: '备注',
-          dataIndex: 'comments'
+          dataIndex: 'comments',
+          customRender: (text) => <title title={text} style="display: inline-block;">{text}</title>
         },
         {
           title: '角色标识',
@@ -198,6 +199,9 @@ export default {
     }
   },
   created () {
+    for (let i = 0, len = this.columns.length; i < len; i++) {
+      this.columns[i].align = 'center'
+    }
     getPermissionVo().then(res => {
       this.permissionVoTree = res.data
       this.renderTreeNodes(this.permissionVoTree)
