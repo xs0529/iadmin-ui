@@ -117,6 +117,24 @@ export function getPermissionByRoleId (parameter) {
   })
 }
 
+export function addPermission (parameter) {
+  return axios({
+    url: api.permission + '/add',
+    method: 'post',
+    params: parameter
+
+  })
+}
+
+export function updatePermission (parameter) {
+  return axios({
+    url: api.permission + '/update',
+    method: 'post',
+    params: parameter
+
+  })
+}
+
 export function addRole (parameter) {
   return axios({
     url: api.role + '/add',

@@ -12,6 +12,7 @@
             <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
               <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
               <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
+              <a-button style="margin-left: 8px" type="link" icon="plus" @click="handleAdd()" v-hasPermission="'SysUser:add'">新建</a-button>
             </span>
           </a-col>
         </a-row>
@@ -31,19 +32,96 @@
         <a-tag :color="text===1 ? 'green' : 'blue'" v-text="text===1 ? '前端菜单' : '后端接口'"></a-tag>
       </span>
       <span slot="action" slot-scope="text, record">
+        <a @click="handleEdit(record)" v-hasPermission="'SysUser:update'">编辑</a>
+        <a-divider type="vertical" />
         <a-popconfirm title="确认删除？" @confirm="removeRole(record)">
           <a-icon slot="icon" type="question-circle-o" style="color: red" />
           <a href="javascript:;">删除</a>
         </a-popconfirm>
       </span>
     </s-table>
+
+    <a-modal
+      title="操作"
+      style="top: 20px;"
+      :width="800"
+      v-model="visible"
+      :confirmLoading="confirmLoading"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
+      <a-form :form="form">
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="id"
+          v-if="!add"
+        >
+          <a-input placeholder="id" disabled="disabled" v-decorator="['id']"/>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="权限名称"
+        >
+          <a-input placeholder="请输入权限名称" v-decorator="['permissionName', {rules: [{required: true, message: '权限名称不能为空'}]}]"/>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="授权标识"
+        >
+          <a-input placeholder="请输入授权标识" :disabled="!add" v-decorator="['permissionCode', {rules: [{required: true, message: '授权标识！'}]}]"/>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="权限类型"
+        >
+          <a-radio-group v-decorator="['type', {rules: [{required: true, message: '请选择权限类型'}]}]">
+            <a-radio :value="1">前端菜单</a-radio>
+            <a-radio :value="2">后端接口</a-radio>
+          </a-radio-group>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="url"
+        >
+          <a-input placeholder="请输入url，新增修改后端接口时填入" v-decorator="['url']"/>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="请求方式"
+        >
+          <a-input placeholder="请输入请求方式，新增修改后端接口时填入" v-decorator="['requestWay']"/>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="组件地址"
+        >
+          <a-input placeholder="请输入组件地址，新增修改前端菜单时填入" v-decorator="['componentUrl']"/>
+        </a-form-item>
+        <a-divider />
+
+      </a-form>
+    </a-modal>
   </a-card>
 </template>
 
 <script>
 import { STable } from '@/components'
 // eslint-disable-next-line no-unused-vars
-import { removeLoginLog, getPermissionListTreeVO } from '@/api/manage'
+import { removeLoginLog, getPermissionListTreeVO, addPermission, updatePermission } from '@/api/manage'
 
 export default {
   name: 'TableList',
@@ -144,16 +222,60 @@ export default {
     }
   },
   methods: {
-    handleEdit (record) {
+    onChange (selectedRowKeys, selectedRows) {
+      this.selectedRowKeys = selectedRowKeys
+      this.selectedRows = selectedRows
+    },
+    async handleEdit (record) {
+      console.log(record.pid)
       this.add = false
       setTimeout(() => {
         this.form.setFieldsValue(record)
       }, 0)
       this.visible = true
     },
-    onChange (selectedRowKeys, selectedRows) {
-      this.selectedRowKeys = selectedRowKeys
-      this.selectedRows = selectedRows
+    handleAdd () {
+      this.add = true
+      this.visible = true
+    },
+    handleOk () {
+      const { form: { validateFields } } = this
+      this.confirmLoading = true
+      validateFields((errors, values) => {
+        if (!errors) {
+          if (this.add) {
+            addPermission(this.form.getFieldsValue()).then(() => {
+              this.visible = false
+              this.confirmLoading = false
+              this.$message.success('新增成功！', 2)
+              this.$refs.table.refresh(true)
+              this.form.resetFields()
+            }).catch((res) => {
+              this.$message.error(res.message, 2)
+              this.confirmLoading = false
+            })
+          } else {
+            updatePermission(this.form.getFieldsValue()).then(() => {
+              this.visible = false
+              this.confirmLoading = false
+              this.$message.success('修改成功！', 2)
+              this.$refs.table.refresh()
+              this.form.resetFields()
+            }).catch((res) => {
+              this.$message.error(res.message, 2)
+              this.confirmLoading = false
+            })
+          }
+        } else {
+          this.confirmLoading = false
+        }
+      })
+    },
+    // 取消按钮操作
+    handleCancel () {
+      this.form.resetFields()
+      this.confirmLoading = false
+      this.visible = false
     },
     toggleAdvanced () {
       this.advanced = !this.advanced
