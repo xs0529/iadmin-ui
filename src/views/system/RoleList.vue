@@ -36,7 +36,7 @@
         <a-divider type="vertical" />
         <a @click="showDrawer(record)" v-hasPermission="'SysRole:update'">授权</a>
         <a-divider type="vertical" />
-        <a-popconfirm title="确认删除？" @confirm="removeRole(record)">
+        <a-popconfirm title="确认删除？" @confirm="removeRole(record)" v-hasPermission="'SysRole:del'">
           <a-icon slot="icon" type="question-circle-o" style="color: red" />
           <a href="javascript:;">删除</a>
         </a-popconfirm>

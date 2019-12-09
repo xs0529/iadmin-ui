@@ -17,7 +17,6 @@
             <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
               <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
               <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
-              <a-button style="margin-left: 8px" type="link" icon="plus" @click="handleAdd()" v-hasPermission="'SysRole:add'">新建</a-button>
             </span>
           </a-col>
         </a-row>
@@ -33,7 +32,7 @@
       :scroll="{ x: '150%'}"
     >
       <span slot="action" slot-scope="text, record">
-        <a-popconfirm title="确认删除？" @confirm="removeRole(record)">
+        <a-popconfirm title="确认删除？" @confirm="removeRole(record)" v-hasPermission="'SysLog:del'">
           <a-icon slot="icon" type="question-circle-o" style="color: red" />
           <a href="javascript:;">删除</a>
         </a-popconfirm>

@@ -12,7 +12,7 @@
             <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
               <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
               <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
-              <a-button style="margin-left: 8px" type="link" icon="plus" @click="handleAdd()" v-hasPermission="'SysUser:add'">新建</a-button>
+              <a-button style="margin-left: 8px" type="link" icon="plus" @click="handleAdd()" v-hasPermission="'SysPermission:add'">新建</a-button>
             </span>
           </a-col>
         </a-row>
@@ -32,7 +32,7 @@
         <a-tag :color="text===1 ? 'green' : 'blue'" v-text="text===1 ? '前端菜单' : '后端接口'"></a-tag>
       </span>
       <span slot="action" slot-scope="text, record">
-        <a @click="handleEdit(record)" v-hasPermission="'SysUser:update'">编辑</a>
+        <a @click="handleEdit(record)" v-hasPermission="'SysPermission:update'">编辑</a>
         <a-divider type="vertical" />
         <a-popconfirm title="确认删除？" @confirm="removeRole(record)">
           <a-icon slot="icon" type="question-circle-o" style="color: red" />
@@ -75,6 +75,19 @@
           label="授权标识"
         >
           <a-input placeholder="请输入授权标识" :disabled="!add" v-decorator="['permissionCode', {rules: [{required: true, message: '授权标识！'}]}]"/>
+        </a-form-item>
+
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="父级菜单"
+        >
+          <a-tree-select
+            :treeData="permissionSelectTree"
+            placeholder="请选择父级菜单"
+            treeDefaultExpandAll
+            v-decorator="['pid', {rules: [{required: true, message: '请选择父级菜单'}]}]"
+          />
         </a-form-item>
 
         <a-form-item
@@ -212,7 +225,7 @@ export default {
       },
       selectedRowKeys: [],
       selectedRows: [],
-      permissionVoTree: [],
+      permissionSelectTree: [],
       selectedKeys: []
     }
   },
@@ -220,6 +233,14 @@ export default {
     for (let i = 0, len = this.columns.length; i < len; i++) {
       this.columns[i].align = 'center'
     }
+    getPermissionListTreeVO({ type: 1 }).then(res => {
+      const p = {}
+      p.id = 0
+      p.permissionName = '顶级菜单'
+      p.children = res.data.records
+      this.permissionSelectTree = [p]
+      this.renderTreeNodes(this.permissionSelectTree)
+    })
   },
   methods: {
     onChange (selectedRowKeys, selectedRows) {
@@ -287,6 +308,16 @@ export default {
         this.$refs.table.refresh()
       }).catch((res) => {
         this.$message.error(res.message, 2)
+      })
+    },
+    renderTreeNodes (data) {
+      data.map(item => {
+        item.key = item.id
+        item.value = item.id
+        item.title = item.permissionName
+        if (item.children) {
+          this.renderTreeNodes(item.children)
+        }
       })
     }
   },

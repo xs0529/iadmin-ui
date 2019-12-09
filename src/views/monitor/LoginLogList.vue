@@ -29,7 +29,7 @@
       :data="loadData"
     >
       <span slot="action" slot-scope="text, record">
-        <a-popconfirm title="确认删除？" @confirm="removeRole(record)">
+        <a-popconfirm title="确认删除？" @confirm="removeRole(record)" v-hasPermission="'SysLoginLog:del'">
           <a-icon slot="icon" type="question-circle-o" style="color: red" />
           <a href="javascript:;">删除</a>
         </a-popconfirm>

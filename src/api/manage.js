@@ -103,10 +103,11 @@ export function getPermissionVo () {
   })
 }
 
-export function getPermissionListTreeVO () {
+export function getPermissionListTreeVO (parameter) {
   return axios({
     url: api.permission + '/getListTreeVO',
-    method: 'get'
+    method: 'get',
+    params: parameter
   })
 }
 
