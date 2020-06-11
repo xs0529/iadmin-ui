@@ -23,6 +23,7 @@
       ref="table"
       size="default"
       rowKey="id"
+      childrenColumnName="child"
       :columns="columns"
       :data="loadData"
       :showPagination="false"
@@ -237,7 +238,7 @@ export default {
       const p = {}
       p.id = 0
       p.permissionName = '顶级菜单'
-      p.children = res.data.records
+      p.child = res.data.records
       this.permissionSelectTree = [p]
       this.renderTreeNodes(this.permissionSelectTree)
     })
@@ -315,8 +316,9 @@ export default {
         item.key = item.id
         item.value = item.id
         item.title = item.permissionName
-        if (item.children) {
-          this.renderTreeNodes(item.children)
+        if (item.child) {
+          this.renderTreeNodes(item.child)
+          item.children = item.child
         }
       })
     }

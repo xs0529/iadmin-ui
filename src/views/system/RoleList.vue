@@ -303,26 +303,13 @@ export default {
     renderTreeNodes (data) {
       data.map(item => {
         item.key = item.id
-        item.title = item.name
-        if (item.children) {
-          this.renderTreeNodes(item.children)
+        item.title = item.permissionName
+        if (item.child) {
+          this.renderTreeNodes(item.child)
+          item.children = item.child
         }
       })
     }
-  },
-  watch: {
-    /*
-      'selectedRows': function (selectedRows) {
-        this.needTotalList = this.needTotalList.map(item => {
-          return {
-            ...item,
-            total: selectedRows.reduce( (sum, val) => {
-              return sum + val[item.dataIndex]
-            }, 0)
-          }
-        })
-      }
-      */
   }
 }
 </script>

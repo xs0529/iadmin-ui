@@ -2,10 +2,10 @@ import { axios } from '@/utils/request'
 import qs from 'qs'
 
 const api = {
-  user: '/sysUser',
-  role: '/sysRole',
+  user: '/user',
+  role: '/role',
   service: '/service',
-  permission: '/sysPermission',
+  permission: '/permission',
   permissionNoPager: '/permission/no-pager',
   orgTree: '/org/tree',
   loginLog: '/sysLoginLog',
@@ -16,8 +16,8 @@ export default api
 
 export function getUserList (parameter) {
   return axios({
-    url: api.user + '/list',
-    method: 'post',
+    url: api.user + '/page',
+    method: 'get',
     params: parameter
   })
 }
@@ -53,8 +53,8 @@ export function removeUser (parameter) {
 
 export function getRoleList (parameter) {
   return axios({
-    url: api.role + '/list',
-    method: 'post',
+    url: api.role + '/page',
+    method: 'get',
     params: parameter
   })
 }
@@ -68,8 +68,8 @@ export function removeLoginLog (parameter) {
 
 export function getLoginLogList (parameter) {
   return axios({
-    url: api.loginLog + '/list',
-    method: 'post',
+    url: api.loginLog + '/page',
+    method: 'get',
     params: parameter
   })
 }
@@ -83,8 +83,8 @@ export function removeSysLog (parameter) {
 
 export function getSysLogList (parameter) {
   return axios({
-    url: api.sysLog + '/list',
-    method: 'post',
+    url: api.sysLog + '/page',
+    method: 'get',
     params: parameter
   })
 }
@@ -98,14 +98,14 @@ export function getRoleByUser (parameter) {
 
 export function getPermissionVo () {
   return axios({
-    url: api.permission + '/getTreeVO',
+    url: api.permission + '/tree',
     method: 'get'
   })
 }
 
 export function getPermissionListTreeVO (parameter) {
   return axios({
-    url: api.permission + '/getListTreeVO',
+    url: api.permission + '/treePage',
     method: 'get',
     params: parameter
   })
@@ -113,8 +113,8 @@ export function getPermissionListTreeVO (parameter) {
 
 export function getPermissionByRoleId (parameter) {
   return axios({
-    url: api.permission + '/getByRoleId/' + parameter,
-    method: 'post'
+    url: api.permission + '/getByRoleId?id=' + parameter,
+    method: 'get'
   })
 }
 

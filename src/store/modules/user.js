@@ -60,12 +60,12 @@ const user = {
       return new Promise((resolve, reject) => {
         getInfo().then(response => {
           const result = response.data
-          result.permissionCodes = result.permissionCodes.concat('default')
-          commit('SET_ROLE_LABELS', result.roleLabels)
-          commit('SET_PERMISSION_CODES', result.permissionCodes)
-          commit('SET_INFO', result.userInfo)
-          commit('SET_NAME', { name: result.userInfo.name, welcome: welcome() })
-          commit('SET_AVATAR', result.userInfo.avatar)
+          result.permissionCodes = result.permissions.concat('default')
+          commit('SET_ROLE_LABELS', result.roles)
+          commit('SET_PERMISSION_CODES', result.permissions)
+          commit('SET_INFO', result)
+          commit('SET_NAME', { name: result.fullName, welcome: welcome() })
+          commit('SET_AVATAR', result.avatar)
           resolve(response)
         }).catch(error => {
           reject(error)
