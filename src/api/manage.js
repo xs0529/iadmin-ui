@@ -26,10 +26,7 @@ export function addUser (parameter) {
   return axios({
     url: api.user + '/add',
     method: 'post',
-    params: parameter,
-    paramsSerializer: params => {
-      return qs.stringify(params, { indices: false })
-    }
+    params: parameter
   })
 }
 
@@ -47,7 +44,7 @@ export function updateUser (parameter) {
 export function removeUser (parameter) {
   return axios({
     url: api.user + '/remove/' + parameter,
-    method: 'post'
+    method: 'delete'
   })
 }
 
@@ -77,7 +74,7 @@ export function getLoginLogList (parameter) {
 export function removeSysLog (parameter) {
   return axios({
     url: api.sysLog + '/remove/' + parameter,
-    method: 'post'
+    method: 'delete'
   })
 }
 
@@ -91,7 +88,7 @@ export function getSysLogList (parameter) {
 
 export function getRoleByUser (parameter) {
   return axios({
-    url: api.role + '/getByUser/' + parameter,
+    url: api.role + '/getByUser?userId=' + parameter,
     method: 'get'
   })
 }
